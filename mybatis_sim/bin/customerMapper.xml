@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mapper namespace="com.mybatis.sim.business.entity.User">
+	<resultMap propertyId="customerResultMap" type="com.mybatis.sim.business.entity.User">
+		<id property="id" column="id" />
+		<result property="name" column="name" />
+		<result property="gender" column="gender" />
+		<result property="age" column="age" />
+	</resultMap>
+	
+	<insert id="saveUser" parameterType="com.mybatis.sim.business.entity.User"
+		useGeneratedKeys="true" keyProperty="id">
+		insert into user(name,gender,age) values (#{name}, #{gender}, #{age})
+	</insert>
+	<select id="queryMessageList" resultMap="customerResultMap">
+    	select * from user
+  	</select>
+  	<select id="selectByid" parameterType="java.lang.string" resultType="com.mybatis.sim.business.entity.User">
+    	select * from user where name = #{name}
+ 	</select>
+ 	 <delete id="delete" parameterType="java.lang.string">
+    	DELETE FROM user WHERE name = #{name}
+ 	 </delete>
+ 	 <update id="update" parameterType="com.mybatis.sim.business.entity.User">
+	    UPDATE user SET gender = #{gender}, age = #{age} WHERE name = #{name}
+  	</update>
+<!--   	UPDATE worker SET gender = #{gender}, age = #{age} WHERE name = #{name} -->
+</mapper>

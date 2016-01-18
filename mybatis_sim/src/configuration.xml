@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>  
+    <settings>
+        <setting name="defaultExecutorType" value="SIMPLE" />
+    </settings>
+  
+	<dataSource>  
+        <property name="driver" value="com.mysql.jdbc.Driver" />
+        <property name="url" value="192.168.67.190:3306/test_user" />
+        <property name="username" value="test" />  
+        <property name="password" value="test" />  
+    </dataSource>
+                  
+    <!-- mapping 文件路径配置 -->  
+    <mappers>
+    	<mapper resource="customerMapper.xml" />
+    </mappers>
+</configuration>
