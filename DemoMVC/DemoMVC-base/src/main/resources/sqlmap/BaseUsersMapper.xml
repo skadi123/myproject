@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.leehat.dao.BaseDao">
+
+	<!-- resultMap -->
+	<resultMap type="com.leehat.pojo.User" id="userInfo">
+		<id property="id" column="ID" jdbcType="INTEGER" />
+		<result property="name" column="NAME" jdbcType="VARCHAR" />
+		<result property="password" column="PASSWORD" jdbcType="VARCHAR" />
+		<result property="role_type" column="ROLE_TYPE" jdbcType="VARCHAR" />
+	</resultMap>
+	<sql id="Query_All">
+		select ID,NAME,PASSWORD,ROLE_TYPE from T_USER
+	</sql>
+	<sql id="Query_Condition_Name">
+		WHERE NAME = #{name}
+	</sql>
+
+	<select id="queryUserInfo" resultMap="userInfo">
+		<include refid="Query_All" />
+	</select>
+
+	<select id="queryUserByName" resultMap="userInfo">
+		<include refid="Query_All" />
+		<include refid="Query_Condition_Name" />
+	</select>
+	
+	<insert id="insertUser"  parameterType="java.util.Map">
+	    insert into T_USER(name,password,role_type) values(#{name},#{password},#{role_type})
+	</insert>
+	
+	<update id="updateUser" parameterType="java.util.Map">
+	    update T_USER set name = #{name},password = #{password},role_type = #{role_type} where id = #{id}
+	</update>
+	
+	<delete id="deleteUserById" parameterType="java.util.ArrayList">
+	    delete from T_USER where id in
+	    <foreach collection="array" index="index" item="item" open="(" separator="," close=")">
+	        #{item}
+	    </foreach>
+	</delete>
+</mapper>

@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="
+	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+	http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd	
+	http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+	http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd"
+	default-lazy-init="true">
+
+	<!-- enable autowire -->
+	<context:annotation-config/>
+
+	<!-- 设置使用注解的类所在的jar包 -->
+    <context:component-scan base-package="com.leehat"/>
+    
+	<!-- jackson 相关 -->
+	<bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">      
+        <property name="messageConverters"> 
+            <list> 
+                <bean class="org.springframework.http.converter.StringHttpMessageConverter">  
+                 <property name = "supportedMediaTypes">  
+                <list>  
+                     <value>text/plain;charset=UTF-8</value>  
+                </list>  
+                </property>  
+               </bean>   
+                <bean class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter" >  
+                 <property name="supportedMediaTypes">    
+                   <list>    
+                       <value>application/json;charset=UTF-8</value>    
+                     </list>   
+                  </property>  
+                 </bean>       
+            </list>      
+        </property>      
+    </bean>
+    
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.leehat.dao" />
+    </bean>
+    
+	<!--  annotation默认的方法映射适配器 -->
+	<bean class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping"/>
+	<bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter"/> 
+ 
+    <!-- 对转向页面的路径解析。prefix：前缀， suffix：后缀 -->
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+    	<property name="prefix" value="/page/"/>
+    	<property name="suffix" value=".jsp"/>
+    </bean>
+
+    <!-- 异常处理类--> 
+    <bean id="exceptionManager" class="com.leehat.exception.ExceptionManager"/>
+    
+    <!-- 异常处理AOP配置--> 
+	<aop:config>
+	    <aop:aspect id="aspect" ref="exceptionManager">
+	        <aop:pointcut expression="execution(* com.leehat.controller.*.*(..))" id="pointCut"/>
+	        <aop:around method="doAround" pointcut-ref="pointCut"/>
+	    </aop:aspect>
+	</aop:config>	
+	
+	<!-- 处理静态资源 -->
+	<mvc:default-servlet-handler/>
+	
+	<!-- 配置文件读入
+	<context:property-placeholder location="classpath*:/config/jdbc.properties" />--> 
+	<!-- ignore-unresolvable="true" -->
+	
+	<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+        <property name="url" value="jdbc:mysql://120.25.126.73:3306/test"/>
+        <property name="username" value="root"/>
+        <property name="password" value="qwe123!@#"/>
+	</bean>
+	
+    <!-- 数据连接事务 --> 
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+	    <property name="dataSource" ref="dataSource"/>
+	</bean>
+	
+	<!-- 事务通知-->
+	<tx:advice id="txAdvice" transaction-manager="transactionManager">
+	    <tx:attributes>
+	        <tx:method name="query*" propagation="REQUIRED"/>
+			<tx:method name="insert*" propagation="REQUIRED" />
+			<tx:method name="update*" propagation="REQUIRED" />
+			<tx:method name="delete*" propagation="REQUIRED" />
+			<tx:method name="add*" propagation="REQUIRED" />
+			<tx:method name="*" read-only="false" propagation="REQUIRED" rollback-for="Exception"/>
+	    </tx:attributes>
+	</tx:advice>
+	
+	<aop:config>
+	    <!-- 切入点 -->
+	    <aop:pointcut id="businessService" expression="execution(public * com.*.service.impl.*.*(..))"/>
+	    
+	    <!-- 切入点和事务通知的适配器 -->
+	    <aop:advisor advice-ref="txAdvice" pointcut-ref="businessService"/>
+	</aop:config>
+	
+	<!-- define the SqlSessionFactory -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="configLocation" value="/WEB-INF/mybatis-config.xml" />
+		<property name="mapperLocations" value="classpath*:sqlmap/*.xml" />
+	</bean>
+	
+</beans>
